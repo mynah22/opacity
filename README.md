@@ -6,18 +6,21 @@ Opacity uses the Riejndahl cipher and the 256-bit Secure Hashing Algorithm via t
 
 Known issues:
 
-1) Shebang is platform-dependant
+  1) Shebang is platform-dependant
 
-2) Decryption leaves padding
+  2) Decryption leaves padding
 
-3) Opens any size file (will read a 20gb file to ram)
+  3) Opens any size file (will read a 20gb file to ram)
+
 
 
 Areas of desired improvement:
-1) Better PBKD
 
-2) More practical file i/o 
+  1) Better PBKD
 
-3) Web gui
+  2) More practical file i/o 
 
-4) Documentation
+  3) Web gui
+
+  4) Documentation
+
