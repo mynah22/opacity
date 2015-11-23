@@ -23,4 +23,27 @@ Areas of desired improvement:
   3) Web gui
 
   4) Documentation
+  
+  
+  
+  
+  
+  
+Help for command line interface:
+
+usage: cmd.py [-h] (-e | -d) [-p PASSPHRASE] [-i INPUTPATH] [-o OUTPUTPATH]
+              [-r]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -e, --encrypt         Encrypts a file.
+  -d, --decrypt         Decrypts a file.
+  -p PASSPHRASE, --passphrase PASSPHRASE
+                        ONLY FOR TESTING. passes passpharse on command line,
+                        and therefore may be recorded.
+  -i INPUTPATH, --inputpath INPUTPATH
+                        path to input
+  -o OUTPUTPATH, --outputpath OUTPUTPATH
+                        Path to output.
+  -r, --read            Read file to stdout; do not save output. overrides -o
 
