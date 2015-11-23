@@ -4,6 +4,11 @@ A python AES implementation
 
 Opacity uses the Riejndahl cipher and the 256-bit Secure Hashing Algorithm via the Crypto package in the python standard library. There is currently a functioning command-line api, and I have a broken web gui. I will commit the webgui when it becomes more functional. 
 
+See the usage.txt document for usage instructions.
+
+
+
+
 Known issues:
 
   1) Shebang is platform-dependant
