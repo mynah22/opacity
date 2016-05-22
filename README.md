@@ -11,12 +11,9 @@ See the usage.txt document for usage instructions.
 
 Known issues:
 
-  1) Shebang is platform-dependant
+  1) Shebang is possibly platform-dependant
 
   2) Decryption leaves padding
-
-  3) Opens any size file (will read a 20gb file to ram)
-
 
 
 Areas of desired improvement:
