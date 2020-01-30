@@ -1,0 +1,7 @@
+-Error handling
+
+-scrypt variable levls
+	steps of N, p, and r variables
+	store level in json dict
+
+-Streaming file i/o?

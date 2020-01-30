@@ -1,9 +1,11 @@
 #!/usr/bin/python
-from crypto import CipherEngine as ce
+import core
 import userconfirm as uc
-import argparse
+from argparse import ArgumentParser
+from Crypto.Random import get_random_bytes
+
 #setting up command-line argument parsing
-argp = argparse.ArgumentParser()
+argp = ArgumentParser()
 modegroup = argp.add_mutually_exclusive_group(required=True)
 modegroup.add_argument('-e', '--encrypt',
                        help='\nEncrypts a file.', 
@@ -18,7 +20,7 @@ argp.add_argument('-p', '--passphrase',
                   'passes passpharse on command line,\n'+
                   'and therefore may be recorded.')
 
-argp.add_argument('-i','--inputpath', help='\npath to input')
+argp.add_argument('-i','--inputpath', help='\nPath to input')
 
 argp.add_argument('-o','--outputpath', help='\nPath to output.\n')
 
@@ -49,20 +51,20 @@ if not arguments.passphrase:
     passphrase = uc.getpassphrase()
 else:
     passphrase = arguments.passphrase
-    
+
+
 if __name__ == '__main__':
-    c = ce()
-    c.setfile(inputpath)
-    c.keyderive(passphrase)
     if arguments.encrypt:
-        c.encrypt()
-        fnltxt = ''.join(c.enlist)
+        salt = get_random_bytes(256)
+        if arguments.read:
+         with open(inputpath, 'rb') as infile:
+          print(core.encrypt(core.keyderive(passphrase, salt)['key'], salt, infile.read()))
+        else:
+          core.encryptfile(inputpath, outputpath, core.keyderive(passphrase,salt)['key'], salt)
+          print('file encryption over')
     elif arguments.decrypt:
-        c.decrypt()
-        fnltxt = ''.join(c.delist)
-    if arguments.read:
-        print fnltxt
-    else:
-        with open(outputpath, 'wb') as f:
-            f.write(fnltxt)
-                
+        if arguments.read:
+          print(core.decryptfile(inputpath, 0, passphrase, 1))
+        else:
+          core.decryptfile(inputpath, outputpath, passphrase)
+
