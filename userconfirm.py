@@ -12,7 +12,7 @@ def getpassphrase():
 def getinputpath():
     ipathconfirmed = False
     while not ipathconfirmed:
-        ipath = raw_input('Enter input file path\n')
+        ipath = input('Enter input file path\n')
         if os.path.exists(ipath):
             ipathconfirmed = True
         else:
@@ -23,12 +23,12 @@ def getoutputpath():
     opathconfirmed = False
     newf = False
     while not opathconfirmed:
-        opath = raw_input('Enter output path\n(R to read to console)\n')
+        opath = input('Enter output path\n(R to read to console)\n')
         if opath.lower() == 'r':
             rvals = (None, 'read')
             opathconfirmed = True
         elif os.path.exists(opath):
-            inp0 = raw_input('Path is occupied.\n'
+            inp0 = input('Path is occupied.\n'
                             'Overwite present file?\n'
                             '(Y for yes, N for no,'
                             +' C to cancel and exit.)\n')
@@ -40,7 +40,7 @@ def getoutputpath():
             elif inp0.lower == 'c':
                 exit()
         else:
-            inp1 = raw_input('Path does not exist.\n'
+            inp1 = input('Path does not exist.\n'
                             'Create new file?\n'
                             '(N for new file at '+opath+',\n'
                             +'C to cancel and exit.)\n')
