@@ -1,9 +1,8 @@
 from Crypto.Cipher import AES
 from scrypt import hash as schash
 from Crypto.Random import get_random_bytes
-from base64 import b64encode, b64decode
-import json
 from Crypto.Util.Padding import unpad
+from os.path import getsize
 def keyderive(passphrase, salt=0):
 	if not salt:
 		salt = get_random_bytes(256)
@@ -13,28 +12,46 @@ def keyderive(passphrase, salt=0):
 def encrypt(key, salt, plaintext):
 	CipherEngine = AES.new(key, AES.MODE_GCM, nonce=get_random_bytes(12))
 	ciphertext, mtag = CipherEngine.encrypt_and_digest(plaintext)
-	return {'EncipheredData':ciphertext, 'MAC Tag':mtag, 'Nonce':CipherEngine.nonce, 'Salt':salt}
+	return {'EncipheredData':ciphertext, 'MACTag':mtag, 'Nonce':CipherEngine.nonce, 'Salt':salt}
 
 def decrypt(key, ciphertext, mtag, nonce):
 	CipherEngine = AES.new(key, AES.MODE_GCM, nonce)
 	return CipherEngine.decrypt_and_verify(ciphertext, mtag)
 
-def encryptfile(inputpath, outputpath, key, salt=get_random_bytes(256)):
+def encryptfile(inputpath, outputpath, key, salt=get_random_bytes(256), buflen=2048):
+    CipherEngine = AES.new(key, AES.MODE_GCM, nonce=get_random_bytes(12))
     with open(inputpath, 'rb') as inf:
-    	edict=encrypt(key, salt, inf.read())
-    	for k in edict:
-    		edict[k] = b64encode(edict[k]).decode('utf-8')
-    with open(outputpath, 'wb') as outf:
-    	outf.write(json.dumps(edict).encode('utf-8'))
+	    with open(outputpath, 'wb') as outf:
+    		buf = inf.read(buflen)
+    		while len(buf) > 0:
+    			outf.write(CipherEngine.encrypt(buf))
+    			buf=inf.read(buflen)
+    		outf.write(CipherEngine.digest()) # MAC tag, 16 bytes
+    		outf.write(CipherEngine.nonce) # nonce, 12 bytes
+    		outf.write(salt) # salt, 256 bytes
 
-def decryptfile(inputpath, outputpath, passphrase, readmode=0):
+
+def decryptfile(inputpath, outputpath, passphrase, readmode=0, buflen=2048):
 	with open(inputpath, 'rb') as inf:
-		ddict=json.loads(inf.read())
-		for k in ddict:
-			ddict[k] = b64decode(ddict[k])
-		key=keyderive(passphrase, ddict['Salt'])['key']
-		if readmode:
-			return decrypt(key, ddict['EncipheredData'], ddict['MAC Tag'], ddict['Nonce'])
-		else:
-			with open(outputpath, 'wb') as outf:
-				outf.write(decrypt(key, ddict['EncipheredData'], ddict['MAC Tag'], ddict['Nonce']))
+		fsize=getsize(inputpath)
+		inf.seek(fsize-284)
+		mac = inf.read(16)
+		nonce = inf.read(12)
+		salt = inf.read(256)
+		inf.seek(0)
+		cdatalength= fsize - 284
+		pos=0
+		CipherEngine = AES.new(keyderive(passphrase, salt)['key'], AES.MODE_GCM, nonce)
+		with open(outputpath, 'wb') as outf:
+			while pos < cdatalength:
+				bytesleft=cdatalength-pos
+				if bytesleft < buflen:
+					outf.write(CipherEngine.decrypt(inf.read(bytesleft)))
+					pos+=bytesleft
+				else:	
+					outf.write(CipherEngine.decrypt(inf.read(buflen)))
+					pos+=buflen
+			try:
+				CipherEngine.verify(mac)
+			except:
+				raise ValueError('MAC Verification Failed! DO NOT trust data!')
