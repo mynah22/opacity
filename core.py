@@ -3,13 +3,13 @@ from scrypt import hash as schash
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import unpad
 from os.path import getsize
-def keyderive(passphrase, salt=0):
-	if not salt:
-		salt = get_random_bytes(256)
-	return {'salt':salt, 'key':schash(passphrase, salt, N=1048576, r=8, p=1, buflen=32)}
+def keyderive(passphrase, salt):
+	return schash(passphrase, salt, N=1048576, r=8, p=1, buflen=32)
 	# ~30sec on laptop - N=104576, r=16, p=3
 
-def encrypt(key, salt, plaintext):
+def encrypt(passphrase, plaintext):
+	salt=get_random_bytes(256)
+	key=keyderive(passphrase, salt)
 	CipherEngine = AES.new(key, AES.MODE_GCM, nonce=get_random_bytes(12))
 	ciphertext, mtag = CipherEngine.encrypt_and_digest(plaintext)
 	return {'EncipheredData':ciphertext, 'MACTag':mtag, 'Nonce':CipherEngine.nonce, 'Salt':salt}
@@ -18,7 +18,9 @@ def decrypt(key, ciphertext, mtag, nonce):
 	CipherEngine = AES.new(key, AES.MODE_GCM, nonce)
 	return CipherEngine.decrypt_and_verify(ciphertext, mtag)
 
-def encryptfile(inputpath, outputpath, key, salt=get_random_bytes(256), buflen=2048):
+def encryptfile(inputpath, outputpath, passphrase, buflen=2048):
+    salt=get_random_bytes(256)
+    key=keyderive(passphrase,salt)
     CipherEngine = AES.new(key, AES.MODE_GCM, nonce=get_random_bytes(12))
     with open(inputpath, 'rb') as inf:
 	    with open(outputpath, 'wb') as outf:
@@ -41,7 +43,7 @@ def decryptfile(inputpath, outputpath, passphrase, readmode=0, buflen=2048):
 		inf.seek(0)
 		cdatalength= fsize - 284
 		pos=0
-		CipherEngine = AES.new(keyderive(passphrase, salt)['key'], AES.MODE_GCM, nonce)
+		CipherEngine = AES.new(keyderive(passphrase, salt), AES.MODE_GCM, nonce)
 		with open(outputpath, 'wb') as outf:
 			while pos < cdatalength:
 				bytesleft=cdatalength-pos

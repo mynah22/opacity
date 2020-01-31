@@ -3,3 +3,5 @@
 -scrypt variable levls
 	steps of N, p, and r variables
 	store level in file?
+
+-read mode for decrypt

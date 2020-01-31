@@ -2,7 +2,6 @@
 import core
 import userconfirm as uc
 from argparse import ArgumentParser
-from Crypto.Random import get_random_bytes
 
 #setting up command-line argument parsing
 argp = ArgumentParser()
@@ -55,16 +54,16 @@ else:
 
 if __name__ == '__main__':
     if arguments.encrypt:
-        salt = get_random_bytes(256)
         if arguments.read:
          with open(inputpath, 'rb') as infile:
-          print(core.encrypt(core.keyderive(passphrase, salt)['key'], salt, infile.read()))
+          ddict=core.encrypt(passphrase, infile.read())
+          for i in ddict: print(i+': '+str(ddict[i]))
         else:
-          core.encryptfile(inputpath, outputpath, core.keyderive(passphrase,salt)['key'], salt)
+          core.encryptfile(inputpath, outputpath, passphrase)
           print('file encryption over')
     elif arguments.decrypt:
         if arguments.read:
-          print(core.decryptfile(inputpath, 0, passphrase, 1))
+          pass
         else:
           core.decryptfile(inputpath, outputpath, passphrase)
-
+          print('file decryption over')
